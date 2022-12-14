@@ -1,88 +1,63 @@
-'use strict';
 {
 
-  const question = document.getElementById('question');
-  const choices = document.getElementById('choices');
-  const btn = document.getElementById('btn');
-  const result = document.getElementById('result');
-  const scoreLabel = document.querySelector('#result > p')
-  
-  const quizSet = [
-    {q: 'What is A', c:['A0', 'A1', 'A2']},
-    {q: 'What is B', c:['B0', 'B1', 'B2']},
-    {q: 'What is C', c:['C0', 'C1', 'C2']},
-  ];
+  const next = document.getElementById('next');
+  const ul = document.querySelector('ul');
+  const slides = ul.children;
+  const dots = [];
+  let currentIndex = 0;
 
-  let currentNum = 0;
-  let isAnswered;
-  let score = 0;
+  function moveSlide(){
+    const slideWidth = slides[0].getBoundingClientRect().width;
+    ul.style.transform = `translateX(${-1 * slideWidth * currentIndex}px)`;
 
-  
-
-  function shuffle(arr){
-    for(let i = arr.length - 1; i>0; i--){
-      const j = Math.floor(Math.random()* (i * 1));
-    [arr[j],arr[i]] = [arr[i],arr[j]];
-    }
-    return arr;
   }
 
-  function checkAnswer(li){
-    // if(isAnswered === true){
-    if(isAnswered){
-      return;
-    }
-    isAnswered = true;
+  function moveDots(){
+    dots.forEach(dot =>{
+      dot.classList.remove('current');
+    })
+    dots[currentIndex].classList.add('current');
     
-    if(li.textContent === quizSet[currentNum].c[0]){
-      li.classList.add('correct');
-      score++;
-    }else{
-      li.classList.add('wrong');
-    }
-
-    btn.classList.remove('disabled');
   }
-
-  function setQuiz(){
-    isAnswered = false;
-    question.textContent = quizSet[currentNum].q;
-
-    while(choices.firstChild){
-      choices.removeChild(choices.firstChild);
-    }
   
-    const shuffledChoices = shuffle([...quizSet[currentNum].c]);
-    shuffledChoices.forEach(choice =>{
-      const li = document.createElement('li');
-      li.addEventListener('click',()=>{
-        checkAnswer(li);
+  function setupDots(){
+    for(let i=0; i<slides.length; i++){
+      const button = document.createElement('button');
+      button.addEventListener('click',()=>{
+        currentIndex = i;
+        moveDots();
+        moveSlide();
       });
-      li.textContent = choice;
-      choices.appendChild(li);
-    });
+      dots.push(button);
+      document.querySelector('nav').appendChild(button);
+    }
+    dots[0].classList.add('current');
+  }
 
-    if(currentNum === quizSet.length-1){
-      btn.textContent = 'show score';
+  function Reverse(){
+    if(currentIndex > slides.length-1){
+      currentIndex = 0;
+    }
+    if(currentIndex < 0){
+      currentIndex = slides.length-1;
     }
   }
 
-  setQuiz();
+  setupDots();
 
-  btn.addEventListener('click',()=>{
-    if(btn.classList.contains('disabled')){
-      return;
-    }
-    btn.classList.add('disabled');
-
-    if(currentNum === quizSet.length-1){
-      // console.log(`Score:${score}/${quizSet.length}`);
-      scoreLabel.textContent = `Score:${score}/${quizSet.length}`
-      result.classList.remove('hidden');
-    }else{
-      currentNum++;
-      setQuiz();
-    }
+  next.addEventListener('click',()=>{
+    currentIndex++;
+    Reverse();
+    moveSlide();
+    moveDots();
+    
   });
+  prev.addEventListener('click',()=>{
+    currentIndex--;
+    Reverse();
+    moveSlide();
+    moveDots();
+  });
+
 
 }
