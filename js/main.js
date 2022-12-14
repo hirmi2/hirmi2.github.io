@@ -1,57 +1,88 @@
 'use strict';
 {
-  class Panel{
-    constructor(){
-      const section = document.createElement('section');
-      section.classList.add('panel');
 
-      this.img = document.createElement('img');
-      this.img.src = 'img/seven.png';
+  const question = document.getElementById('question');
+  const choices = document.getElementById('choices');
+  const btn = document.getElementById('btn');
+  const result = document.getElementById('result');
+  const scoreLabel = document.querySelector('#result > p')
+  
+  const quizSet = [
+    {q: 'What is A', c:['A0', 'A1', 'A2']},
+    {q: 'What is B', c:['B0', 'B1', 'B2']},
+    {q: 'What is C', c:['C0', 'C1', 'C2']},
+  ];
 
-      let timeoutId = undefined;
+  let currentNum = 0;
+  let isAnswered;
+  let score = 0;
 
-      this.stop = document.createElement('div');
-      this.stop.textContent = 'STOP!';
-      this.stop.classList.add('stop');
-      this.stop.addEventListener('click',()=>{
-        clearTimeout(this.timeoutId);
-      });
+  
 
-      section.appendChild(this.img);
-      section.appendChild(this.stop);
+  function shuffle(arr){
+    for(let i = arr.length - 1; i>0; i--){
+      const j = Math.floor(Math.random()* (i * 1));
+    [arr[j],arr[i]] = [arr[i],arr[j]];
+    }
+    return arr;
+  }
 
-      const main = document.querySelector('main');
-      main.appendChild(section);
+  function checkAnswer(li){
+    // if(isAnswered === true){
+    if(isAnswered){
+      return;
+    }
+    isAnswered = true;
+    
+    if(li.textContent === quizSet[currentNum].c[0]){
+      li.classList.add('correct');
+      score++;
+    }else{
+      li.classList.add('wrong');
     }
 
-    getRandomImage(){
-      const images = [
-        'img/seven.png',
-        'img/bell.png',
-        'img/cherry.png',
-      ];
-      return images[Math.floor(Math.random()*images.length)];
+    btn.classList.remove('disabled');
+  }
+
+  function setQuiz(){
+    isAnswered = false;
+    question.textContent = quizSet[currentNum].q;
+
+    while(choices.firstChild){
+      choices.removeChild(choices.firstChild);
     }
   
-    spin(){
-      this.img.src = this.getRandomImage();
-      this.timeoutId = setTimeout(()=>{
-        this.spin();
-      },30);
+    const shuffledChoices = shuffle([...quizSet[currentNum].c]);
+    shuffledChoices.forEach(choice =>{
+      const li = document.createElement('li');
+      li.addEventListener('click',()=>{
+        checkAnswer(li);
+      });
+      li.textContent = choice;
+      choices.appendChild(li);
+    });
+
+    if(currentNum === quizSet.length-1){
+      btn.textContent = 'show score';
     }
   }
 
-  const panels = [
-    new Panel(),
-    new Panel(),
-    new Panel(),
-  ];
+  setQuiz();
 
-  const spin = document.getElementById('spin');
-  spin.addEventListener('click', ()=>{
-    panels.forEach(panel =>{
-      panel.spin();
-    });
+  btn.addEventListener('click',()=>{
+    if(btn.classList.contains('disabled')){
+      return;
+    }
+    btn.classList.add('disabled');
+
+    if(currentNum === quizSet.length-1){
+      // console.log(`Score:${score}/${quizSet.length}`);
+      scoreLabel.textContent = `Score:${score}/${quizSet.length}`
+      result.classList.remove('hidden');
+    }else{
+      currentNum++;
+      setQuiz();
+    }
   });
-}
 
+}
